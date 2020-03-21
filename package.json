@@ -1,9 +1,38 @@
 {
+  "name": "gql-codegen-pydantic",
+  "main": "dist/index.cjs.js",
+  "module": "dist/gql-codegen-pydantic.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
   "scripts": {
-    "gen": "graphql-codegen"
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "gen": "graphql-codegen",
+    "prepare": "tsdx build"
+  },
+  "dependencies": {
+    "@graphql-codegen/plugin-helpers": "^1.13.1",
+    "@graphql-codegen/visitor-plugin-common": "^1.13.1"
+  },
+  "peerDependencies": {
+    "@graphql-codegen/cli": "^1.13.0",
+    "graphql": "^14.6.0"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^1.8.1",
-    "graphql": "^14.5.8"
+    "@graphql-codegen/cli": "1.13.1",
+    "@satel/eslint-config-ts-react": "3.3.1",
+    "@types/jest": "25.1.4",
+    "eslint": "6.8.0",
+    "graphql": "14.6.0",
+    "tsdx": "0.13.0",
+    "tslib": "1.11.1",
+    "typescript": "3.8.3"
   }
 }

@@ -2,4 +2,4 @@ schema: schema.graphql
 generates:
   ./test.py:
     plugins:
-      - plugin.js
+      - dist

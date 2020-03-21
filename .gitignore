@@ -24,3 +24,9 @@ yarn-debug.log*
 yarn-error.log*
 
 .env*
+
+
+*.log
+.DS_Store
+node_modules
+dist
