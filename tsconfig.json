@@ -2,7 +2,8 @@
   "include": ["src", "types", "test"],
   "compilerOptions": {
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "target": "es2018",
+    "lib": ["es6", "esnext", "es2015", "dom"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
@@ -21,7 +22,6 @@
     "paths": {
       "*": ["src/*", "node_modules/*"]
     },
-    "jsx": "react",
     "esModuleInterop": true
   }
 }

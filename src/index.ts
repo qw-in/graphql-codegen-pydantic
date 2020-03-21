@@ -1,72 +1,22 @@
-const { printSchema, parse, visit } = require('graphql');
+import { parse, GraphQLSchema, printSchema, visit } from 'graphql';
+import { PluginFunction, Types } from '@graphql-codegen/plugin-helpers';
+
+import { PydanticVisitor } from './visitor';
+import { PydanticPluginRawConfig } from './config';
 
 // eslint-disable-next-line import/prefer-default-export
-export const plugin = (schema: any, documents: any, config: any) => {
+export const plugin: PluginFunction<PydanticPluginRawConfig> = async (
+  schema: GraphQLSchema,
+  documents: Types.DocumentFile[],
+  config: PydanticPluginRawConfig,
+  info,
+): Promise<string> => {
+  const visitor = new PydanticVisitor(config, schema);
   const printedSchema = printSchema(schema);
   const astNode = parse(printedSchema);
-  const visitor = {
-    Name: (node: { value: any }) => {
-      return node.value;
-    },
-    NamedType: (node: { name: any }) => {
-      let val = node.name;
 
-      switch (val) {
-        case 'Boolean':
-          val = 'bool';
-          break;
-        case 'ID':
-          val = 'str';
-          break;
-        case 'String':
-          val = 'str';
-          break;
-        case 'Int':
-          val = 'int';
-          break;
-        case 'Float':
-          val = 'float';
-          break;
-        default:
-          val = `'${val}'`;
-      }
+  const visitorResult = visit(astNode, { leave: visitor as any });
+  const imports = visitor.getImports();
 
-      return `Optional[${val}]`;
-    },
-    ListType: (node: { type: any }) => {
-      return `Optional[List[${node.type}]]`;
-    },
-    NonNullType: (node: { type: string }) => {
-      return node.type.startsWith('Optional[')
-        ? node.type.substring(9, node.type.length - 1)
-        : node.type;
-    },
-    FieldDefinition: (node: { name: any; type: any }) => {
-      return `${node.name}: ${node.type}`;
-    },
-    ObjectTypeDefinition: (node: { name: any; fields: any[] }) => {
-      return `
-class ${node.name}(BaseModel):
-    ${node.fields.join('\n    ')}
-`;
-    },
-    InputValueDefinition: (node: { name: any; type: any }) => {
-      return `${node.name}: ${node.type}`;
-    },
-    InputObjectTypeDefinition: (node: { name: any; fields: any[] }) => {
-      return `
-class ${node.name}(BaseModel):
-    ${node.fields.join('\n    ')}
-`;
-    },
-  };
-
-  const result = visit(astNode, { leave: visitor });
-
-  const header = `
-from typing import List, Optional
-from pydantic import BaseModel
-`;
-
-  return `${header}\n${result.definitions.join('\n')}`;
+  return `${imports}\n\n\n${visitorResult}\n`;
 };

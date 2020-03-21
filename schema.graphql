@@ -1,18 +1,36 @@
+type A {
+  id: ID!
+  a: String
+}
+
+type B {
+  id: ID!
+  b: String
+}
+
+union AB = A | B
+
+type LongNameThing {
+  id: ID!
+}
+
 type Author {
-  id: Int!
+  id: ID!
   firstName: String!
   lastName: String!
   posts(findTitle: String): [Post]
+  longNameThing: LongNameThing!
 }
 
 type Post {
-  id: Int!
+  id: ID!
+  ab: AB
   title: String!
   author: Author!
 }
 
 type Query {
-  posts: [Post]
+  posts: [Post!]!
 }
 
 schema {
