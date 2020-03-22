@@ -1116,7 +1116,7 @@
     "@graphql-toolkit/schema-merging" "0.9.9"
     tslib "1.11.1"
 
-"@graphql-codegen/plugin-helpers@1.13.1", "@graphql-codegen/plugin-helpers@^1.13.1":
+"@graphql-codegen/plugin-helpers@1.13.1":
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/plugin-helpers/-/plugin-helpers-1.13.1.tgz#83291f758a1bcb9c63fa3293c7b09d38bb1427f3"
   integrity sha512-75GkqYnpt79hHxnVNSaVn9ESHB2ORglTcJWfnKKuO5e6/IbW/TsMB9OR683W6Y9c+nZLmwrVJVCVYLckST+1EA==
@@ -1132,7 +1132,7 @@
     tslib "1.11.1"
     upper-case "2.0.1"
 
-"@graphql-codegen/testing@^1.13.1":
+"@graphql-codegen/testing@1.13.1":
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/testing/-/testing-1.13.1.tgz#0641e27098577f30c9af8163dda4a6f455dbb43c"
   integrity sha512-HtBVkR6lf8zMeel3reZ6h2rf+2Kormp6iXj4CFr3OZQmv6Qw75lyMTHPJ8nh3OD/g8YCiKr8/YESwg6cqQC7XQ==
@@ -1143,7 +1143,7 @@
     open "7.0.3"
     tslib "1.11.1"
 
-"@graphql-codegen/visitor-plugin-common@^1.13.1":
+"@graphql-codegen/visitor-plugin-common@1.13.1":
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/visitor-plugin-common/-/visitor-plugin-common-1.13.1.tgz#f06a071d60b7c1645aa79429731420bca5e45cbb"
   integrity sha512-ZdWuONFqDWmYuNVmgSiwDk39Pwp8UEnkd9dhceZ46cOyp8sfB9UPcSZg+Sq7Ku0zam9B2pWpUlr6gLadnbzEFQ==
@@ -2769,7 +2769,7 @@ chalk@^2.0.0, chalk@^2.0.1, chalk@^2.1.0, chalk@^2.3.0, chalk@^2.4.1, chalk@^2.4
     escape-string-regexp "^1.0.5"
     supports-color "^5.3.0"
 
-change-case@^4.1.1:
+change-case@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/change-case/-/change-case-4.1.1.tgz#d5005709275952e7963fed7b91e4f9fdb6180afa"
   integrity sha512-qRlUWn/hXnX1R1LBDF/RelJLiqNjKjUqlmuBVSEIyye8kq49CXqkZWKmi8XeUAdDXWFOcGLUMZ+aHn3Q5lzUXw==

@@ -1,11 +1,20 @@
-type A {
+interface Letter {
+  id: ID!
+}
+
+type A implements Letter {
   id: ID!
   a: String
 }
 
-type B {
+type B implements Letter {
   id: ID!
   b: String
+}
+
+enum TestEnum {
+  FOO
+  BAR
 }
 
 union AB = A | B
@@ -18,7 +27,7 @@ type Author {
   id: ID!
   firstName: String!
   lastName: String!
-  posts(findTitle: String): [Post]
+  posts(findTitle: String): [String]
   longNameThing: LongNameThing!
 }
 
