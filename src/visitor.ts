@@ -289,28 +289,6 @@ export class PydanticVisitor extends BaseVisitor<
       .filter((n: any) => definitions.find((d: any) => d.id === n));
 
     return nodesInOrder
-      .map((n: any, i) => {
-        const before = this.graph.dependenciesOf(n);
-        const after = this.graph.dependantsOf(n);
-
-        // console.log(n);
-        // console.log(before.filter(b => after.includes(b)));
-
-        const b = this.graph.dependenciesOf(n);
-        const a = nodesInOrder.slice(i);
-        const both = b.filter(bb => a.includes(bb));
-        // console.log(both);
-
-        const def = definitions.find((d: any) => d.id === n);
-
-        const toFix = (def.deps ?? []).filter((d: any) => both.includes(d));
-
-        // toFix.forEach((fix: any) => {
-
-        // });
-
-        return n;
-      })
       .map((n: any) => definitions.find((d: any) => d.id === n)?.source || '')
       .join('\n\n\n');
   }
