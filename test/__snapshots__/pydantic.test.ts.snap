@@ -5,25 +5,25 @@ exports[`Pydantic interface with union 1`] = `
 from pydantic import BaseModel
 
 
-class BasePost(BaseModel):
-    id: str
-    title: str
-
-
 class Node(BaseModel):
     id: str
 
 
-class ImagePost(Node, BasePost):
+class BasePost(BaseModel):
     id: str
     title: str
-    source: str
 
 
 class TextPost(Node, BasePost):
     id: str
     title: str
     description: Optional[str]
+
+
+class ImagePost(Node, BasePost):
+    id: str
+    title: str
+    source: str
 
 
 Post = Union['TextPost', 'ImagePost']

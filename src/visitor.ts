@@ -33,7 +33,9 @@ export const PYTHON_SCALARS = {
   Float: 'float',
 };
 
+const PYTHON_RESERVED = ['from'];
 const PYDANTIC_MODEL_RESERVED = ['copy'];
+const RESERVED = PYTHON_RESERVED.concat(PYDANTIC_MODEL_RESERVED);
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface PydanticPluginParsedConfig extends ParsedConfig {
@@ -105,10 +107,6 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   protected canAddGraphNode(id: string): boolean {
-    if (this.graph.hasNode(id)) {
-      return false;
-    }
-
     if (Object.values(this.scalars).includes(id) || id === 'Any') {
       return false;
     }
@@ -117,7 +115,7 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   protected upsertGraphNode(id: string) {
-    if (this.canAddGraphNode(id)) {
+    if (this.canAddGraphNode(id) && !this.graph.hasNode(id)) {
       this.graph.addNode(id);
     }
   }
@@ -127,14 +125,14 @@ export class PydanticVisitor extends BaseVisitor<
       return;
     }
 
-    this.graph.addNode(id);
+    this.upsertGraphNode(id);
 
     ids.forEach((i: string) => {
       if (!this.canAddGraphNode(i)) {
         return;
       }
 
-      this.graph.addNode(i);
+      this.upsertGraphNode(i);
 
       this.graph.addDependency(id, i);
     });
@@ -220,7 +218,7 @@ export class PydanticVisitor extends BaseVisitor<
 
     // Need to alias some field names
     // Otherwise pydantic throws
-    if (PYDANTIC_MODEL_RESERVED.includes(argName)) {
+    if (RESERVED.includes(argName)) {
       this.addFieldImport = true;
       return {
         id: type.id,
