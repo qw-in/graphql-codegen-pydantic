@@ -1,47 +1,9 @@
-interface Letter {
-  id: ID!
-}
-
-type A implements Letter {
-  id: ID!
-  a: String
-}
-
-type B implements Letter {
-  id: ID!
-  b: String
-}
-
-enum TestEnum {
-  FOO
-  BAR
-}
-
-union AB = A | B
-
-type LongNameThing {
-  id: ID!
+type Book {
+  title: String
+  author: Author
 }
 
 type Author {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  posts(findTitle: String): [String]
-  longNameThing: LongNameThing!
-}
-
-type Post {
-  id: ID!
-  ab: AB
-  title: String!
-  author: Author!
-}
-
-type Query {
-  posts: [Post!]!
-}
-
-schema {
-  query: Query
+  name: String
+  books: [Book]
 }
