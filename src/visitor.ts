@@ -19,6 +19,8 @@ import {
   DocumentNode,
   InterfaceTypeDefinitionNode,
   EnumTypeDefinitionNode,
+  InputObjectTypeDefinitionNode,
+  InputValueDefinitionNode,
 } from 'graphql';
 import { snakeCase } from 'change-case';
 import { DepGraph } from 'dependency-graph';
@@ -202,7 +204,7 @@ export class PydanticVisitor extends BaseVisitor<
     };
   }
 
-  FieldDefinition(node: FieldDefinitionNode) {
+  protected visitFieldOrInputDefinition(node: any) {
     const argName = snakeCase(node.name as any);
 
     const { type, directives } = node as any;
@@ -233,6 +235,14 @@ export class PydanticVisitor extends BaseVisitor<
       id: type.id,
       source: indent(`${argName}: ${type.source}`, 2),
     };
+  }
+
+  FieldDefinition(node: FieldDefinitionNode) {
+    return this.visitFieldOrInputDefinition(node);
+  }
+
+  InputValueDefinition(node: InputValueDefinitionNode) {
+    return this.visitFieldOrInputDefinition(node);
   }
 
   EnumTypeDefinition(node: EnumTypeDefinitionNode) {
@@ -311,6 +321,22 @@ export class PydanticVisitor extends BaseVisitor<
     } else {
       this.upsertGraphNode(name);
     }
+
+    return {
+      id: name,
+      source,
+    };
+  }
+
+  InputObjectTypeDefinition(node: InputObjectTypeDefinitionNode) {
+    const { name, fields: rawFields } = node as any;
+
+    const fields = rawFields.filter((f: any) => f);
+
+    const args = fields.map((f: any) => f.source).join('\n');
+    const source = `class ${name}(BaseModel):\n${args}`;
+
+    this.upsertGraphNode(name);
 
     return {
       id: name,

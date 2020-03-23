@@ -23,6 +23,29 @@ describe('Pydantic', () => {
     `);
   });
 
+  it('basic Input', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      input PostUpdateInput {
+        id: ID!
+        title: String
+        description: String
+      }
+    `);
+
+    const result = await plugin(schema, [], {});
+
+    expect(result).toBeSimilarStringTo(`
+    from typing import Optional
+    from pydantic import BaseModel
+
+
+    class PostUpdateInput(BaseModel):
+        id: str
+        title: Optional[str]
+        description: Optional[str]
+    `);
+  });
+
   it('basic Enum', async () => {
     const schema = buildSchema(/* GraphQL */ `
       enum Type {
