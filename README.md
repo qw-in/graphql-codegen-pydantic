@@ -1,6 +1,6 @@
 # Pydantic type generation for graphql
 
-`gql-codegen-pydantic` is a plugin for [`graphql-codegen`](https://graphql-code-generator.com/docs/getting-started/)
+`graphql-codegen-pydantic` is a plugin for [`graphql-codegen`](https://graphql-code-generator.com/docs/getting-started/)
  that generates [Pydantic](https://pydantic-docs.helpmanual.io/) types from any graphql schema
 
 ## Example
@@ -36,14 +36,14 @@ class Book(BaseModel):
 
 ## Warning
 
-`gql-codegen-pydantic` is currently still very experimental and is **not ready for production use**
+`graphql-codegen-pydantic` is currently still very experimental and is **not ready for production use**
 
 ## Installation
 
 1. Set up [`graphql-codegen`](https://graphql-code-generator.com/docs/getting-started/)
-2. Install `gql-codegen-pydantic`
+2. Install `graphql-codegen-pydantic`
 ```shell
-yarn add gql-codegen-pydantic -D
+yarn add graphql-codegen-pydantic -D
 ```
 3. Add python file to `codegen.yml`
 ```yml
@@ -51,7 +51,7 @@ schema: http://localhost:3000/graphql
 generates:
   ./src/schema.py:
     plugins:
-      - gql-codegen-pydantic
+      - pydantic
 ```
 
 ## Limitations

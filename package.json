@@ -1,10 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
-  "name": "gql-codegen-pydantic",
+  "name": "graphql-codegen-pydantic",
   "author": "Quinn Blenkinsop",
-  "main": "dist/index.cjs.js",
-  "module": "dist/gql-codegen-pydantic.esm.js",
+  "main": "dist/index.js",
+  "module": "dist/graphql-codegen-pydantic.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
