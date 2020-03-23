@@ -255,7 +255,10 @@ export class PydanticVisitor extends BaseVisitor<
       this.clearOptional(t.source),
     );
 
-    this.addGraphNodeDeps(name, types);
+    this.addGraphNodeDeps(
+      name,
+      types.map((t: any) => t.id),
+    );
 
     return {
       id: name,
@@ -269,7 +272,10 @@ export class PydanticVisitor extends BaseVisitor<
     const args = fields.map((f: any) => f.source).join('\n');
     const source = `class ${name}(BaseModel):\n${args}`;
 
-    this.addGraphNodeDeps(name, fields);
+    this.addGraphNodeDeps(
+      name,
+      fields.map((f: any) => f.id),
+    );
 
     return {
       id: name,
@@ -305,6 +311,9 @@ export class PydanticVisitor extends BaseVisitor<
     const { definitions } = node as any;
 
     const nodesInOrder = this.graph.overallOrder();
+
+    console.log(nodesInOrder);
+    console.log(definitions);
 
     return nodesInOrder
       .map((n: any) => definitions.find((d: any) => d.id === n)?.source || '')
