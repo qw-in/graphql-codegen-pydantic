@@ -1,7 +1,7 @@
 # Pydantic type generation for graphql
 
 `graphql-codegen-pydantic` is a plugin for [`graphql-codegen`](https://graphql-code-generator.com/docs/getting-started/)
- that generates [Pydantic](https://pydantic-docs.helpmanual.io/) types from any graphql schema
+ that generates [pydantic](https://pydantic-docs.helpmanual.io/) types from any graphql schema
 
 ## Example
 
