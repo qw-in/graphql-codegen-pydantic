@@ -122,34 +122,7 @@ describe('Pydantic', () => {
 
     const result = await plugin(schema, [], {});
 
-    expect(result).toBeSimilarStringTo(`
-    from typing import Optional, Union
-    from pydantic import BaseModel
-
-
-    class BasePost(BaseModel):
-        id: str
-        title: str
-
-
-    class Node(BaseModel):
-        id: str
-
-
-    class ImagePost(Node, BasePost):
-        id: str
-        title: str
-        source: str
-
-
-    Post = Union['TextPost', 'ImagePost']
-
-
-    class TextPost(Node, BasePost):
-        id: str
-        title: str
-        description: Optional[str]
-    `);
+    expect(result).toMatchSnapshot();
   });
 
   it('custom scalar defaults to Any', async () => {

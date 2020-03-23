@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pydantic interface with union 1`] = `
+"from typing import Optional, Union
+from pydantic import BaseModel
+
+
+class BasePost(BaseModel):
+    id: str
+    title: str
+
+
+class Node(BaseModel):
+    id: str
+
+
+class ImagePost(Node, BasePost):
+    id: str
+    title: str
+    source: str
+
+
+class TextPost(Node, BasePost):
+    id: str
+    title: str
+    description: Optional[str]
+
+
+Post = Union['TextPost', 'ImagePost']
+"
+`;

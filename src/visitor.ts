@@ -207,7 +207,16 @@ export class PydanticVisitor extends BaseVisitor<
   FieldDefinition(node: FieldDefinitionNode) {
     const argName = snakeCase(node.name as any);
 
-    const { type } = node as any;
+    const { type, directives } = node as any;
+
+    // @todo handle de-duplicating if snakeCase will break
+    // eg aaaa and AAAA field
+
+    // Handle deprecated
+    const ds = directives.map((d: any) => d.name);
+    if (ds.includes('deprecated')) {
+      return null;
+    }
 
     // Need to alias some field names
     // Otherwise pydantic throws
@@ -267,7 +276,9 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   InterfaceTypeDefinition(node: InterfaceTypeDefinitionNode) {
-    const { name, fields } = node as any;
+    const { name, fields: rawFields } = node as any;
+
+    const fields = rawFields.filter((f: any) => f);
 
     const args = fields.map((f: any) => f.source).join('\n');
     const source = `class ${name}(BaseModel):\n${args}`;
@@ -284,7 +295,9 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   ObjectTypeDefinition(node: ObjectTypeDefinitionNode) {
-    const { name, fields, interfaces: rawInterfaces } = node as any;
+    const { name, fields: rawFields, interfaces: rawInterfaces } = node as any;
+
+    const fields = rawFields.filter((f: any) => f);
 
     const interfaces = rawInterfaces.map((n: any) =>
       this.clearOptional(n.source).replace(/'/g, ''),
