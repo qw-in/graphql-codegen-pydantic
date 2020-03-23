@@ -31,8 +31,9 @@ export const PYTHON_SCALARS = {
   Boolean: 'bool',
   Int: 'int',
   Float: 'float',
-  DateTime: 'Any',
 };
+
+const PYDANTIC_MODEL_RESERVED = ['copy'];
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface PydanticPluginParsedConfig extends ParsedConfig {
@@ -44,12 +45,14 @@ export class PydanticVisitor extends BaseVisitor<
   PydanticPluginParsedConfig
 > {
   private addOptionalImport = false;
+  private addAnyImport = false;
   private addListImport = false;
   private addUnionImport = false;
   private addEnumImport = false;
+  private addFieldImport = false;
 
   private graph = new DepGraph({
-    circular: true,
+    circular: false,
   });
 
   constructor(
@@ -65,8 +68,12 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   public getImports(): string {
-    const typing = ['Any'];
+    const typing = [];
     const pydantic = ['BaseModel'];
+
+    if (this.addAnyImport) {
+      typing.push(`Any`);
+    }
 
     if (this.addOptionalImport) {
       typing.push(`Optional`);
@@ -78,6 +85,10 @@ export class PydanticVisitor extends BaseVisitor<
 
     if (this.addUnionImport) {
       typing.push(`Union`);
+    }
+
+    if (this.addFieldImport) {
+      pydantic.push(`Field`);
     }
 
     const enumInput = this.addEnumImport ? 'from enum import Enum' : '';
@@ -93,6 +104,42 @@ export class PydanticVisitor extends BaseVisitor<
     return [enumInput, typingImport, pydanticImport].filter(i => i).join('\n');
   }
 
+  protected canAddGraphNode(id: string): boolean {
+    if (this.graph.hasNode(id)) {
+      return false;
+    }
+
+    if (Object.values(this.scalars).includes(id) || id === 'Any') {
+      return false;
+    }
+
+    return true;
+  }
+
+  protected upsertGraphNode(id: string) {
+    if (this.canAddGraphNode(id)) {
+      this.graph.addNode(id);
+    }
+  }
+
+  protected addGraphNodeDeps(id: string, ids: string[]) {
+    if (!this.canAddGraphNode(id)) {
+      return;
+    }
+
+    this.graph.addNode(id);
+
+    ids.forEach((i: string) => {
+      if (!this.canAddGraphNode(i)) {
+        return;
+      }
+
+      this.graph.addNode(i);
+
+      this.graph.addDependency(id, i);
+    });
+  }
+
   protected clearOptional(str: string): string {
     if (str.startsWith('Optional[')) {
       return str.replace(/Optional\[(.*?)\]$/, '$1');
@@ -102,42 +149,43 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   Name(node: NameNode) {
-    const { value } = node;
-
-    let convertedName = value;
-    if (Object.keys(this.scalars).includes(value)) {
-      convertedName = this.scalars[value];
-    }
-
-    return convertedName;
+    return node.value;
   }
 
   NamedType(node: NamedTypeNode) {
+    const { name } = node as any;
+
+    // Scalars
+    if (Object.keys(this.scalars).includes(name)) {
+      const id = this.scalars[name];
+
+      // Special case for any
+      if (id === 'any') {
+        this.addAnyImport = true;
+        return {
+          id: 'Any',
+          source: 'Any',
+        };
+      }
+
+      this.addOptionalImport = true;
+      return {
+        id,
+        source: `Optional[${id}]`,
+      };
+    }
+
+    // Defined
     this.addOptionalImport = true;
-
-    let { name } = node as any;
-
-    if (name === 'any') {
-      name = 'Any';
-    }
-
-    // If not a scalar, create a node
-    if (!this.graph.hasNode(name)) {
-      this.graph.addNode(name);
-    }
-
-    const source = Object.values(this.scalars).includes(name)
-      ? `Optional[${name}]`
-      : `Optional['${name}']`;
-
     return {
       id: name,
-      source,
+      source: `Optional['${name}']`,
     };
   }
 
   ListType(node: ListTypeNode) {
     this.addListImport = true;
+    this.addOptionalImport = true;
 
     const { type } = node as any;
 
@@ -161,6 +209,19 @@ export class PydanticVisitor extends BaseVisitor<
 
     const { type } = node as any;
 
+    // Need to alias some field names
+    // Otherwise pydantic throws
+    if (PYDANTIC_MODEL_RESERVED.includes(argName)) {
+      this.addFieldImport = true;
+      return {
+        id: type.id,
+        source: indent(
+          `${argName}_: ${type.source} = Field(None, alias='${argName}')`,
+          2,
+        ),
+      };
+    }
+
     return {
       id: type.id,
       source: indent(`${argName}: ${type.source}`, 2),
@@ -177,9 +238,7 @@ export class PydanticVisitor extends BaseVisitor<
       .join('\n');
     const source = `class ${name}(str, Enum):\n${val}`;
 
-    if (!this.graph.hasNode(name)) {
-      this.graph.addNode(name);
-    }
+    this.upsertGraphNode(name);
 
     return {
       id: name,
@@ -196,17 +255,7 @@ export class PydanticVisitor extends BaseVisitor<
       this.clearOptional(t.source),
     );
 
-    if (!this.graph.hasNode(name)) {
-      this.graph.addNode(name);
-    }
-
-    types.forEach((t: any) => {
-      if (!this.graph.hasNode(t.id)) {
-        this.graph.addNode(t.id);
-      }
-
-      this.graph.addDependency(name, t.id);
-    });
+    this.addGraphNodeDeps(name, types);
 
     return {
       id: name,
@@ -215,78 +264,47 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   InterfaceTypeDefinition(node: InterfaceTypeDefinitionNode) {
-    const modelName = node.name as any;
-    const modelDef = `class ${modelName}(BaseModel):`;
-    const modelArguments = (node.fields ?? [])
-      .map((f: any) => f.source)
-      .join('\n');
+    const { name, fields } = node as any;
 
-    if (!this.graph.hasNode(modelName)) {
-      this.graph.addNode(modelName);
-    }
+    const args = fields.map((f: any) => f.source).join('\n');
+    const source = `class ${name}(BaseModel):\n${args}`;
 
-    (node.fields ?? []).forEach((t: any) => {
-      if (!this.graph.hasNode(t.id)) {
-        this.graph.addNode(t.id);
-      }
-
-      this.graph.addDependency(modelName, t.id);
-    });
+    this.addGraphNodeDeps(name, fields);
 
     return {
-      id: modelName,
-      source: [modelDef, modelArguments].join('\n'),
+      id: name,
+      source,
     };
   }
 
   ObjectTypeDefinition(node: ObjectTypeDefinitionNode) {
-    const modelName = node.name as any;
-    const interfaces = (node.interfaces as any).map((n: any) =>
+    const { name, fields, interfaces: rawInterfaces } = node as any;
+
+    const interfaces = rawInterfaces.map((n: any) =>
       this.clearOptional(n.source).replace(/'/g, ''),
     );
-    const is = interfaces.length ? interfaces.join(', ') : 'BaseModel';
-    const modelDef = `class ${modelName}(${is}):`;
-    const modelArguments = (node.fields ?? [])
-      .map((f: any) => f.source)
-      .join('\n');
 
-    if (!this.graph.hasNode(modelName)) {
-      this.graph.addNode(modelName);
+    const impl = interfaces.length ? interfaces.join(', ') : 'BaseModel';
+
+    const args = fields.map((f: any) => f.source).join('\n');
+    const source = `class ${name}(${impl}):\n${args}`;
+
+    if (interfaces.length) {
+      this.addGraphNodeDeps(name, interfaces);
+    } else {
+      this.upsertGraphNode(name);
     }
 
-    const deps: any[] = [];
-
-    interfaces.forEach((t: any) => {
-      if (!this.graph.hasNode(t)) {
-        this.graph.addNode(t);
-      }
-
-      deps.push(t);
-      this.graph.addDependency(modelName, t);
-    });
-
-    // (node.fields ?? []).forEach((t: any) => {
-    //   if (!this.graph.hasNode(t.id)) {
-    //     this.graph.addNode(t.id);
-    //   }
-
-    //   deps.push(t.id);
-    //   this.graph.addDependency(modelName, t.id);
-    // });
-
     return {
-      id: modelName,
-      source: [modelDef, modelArguments].join('\n'),
-      deps,
+      id: name,
+      source,
     };
   }
 
   Document(node: DocumentNode) {
     const { definitions } = node as any;
 
-    const nodesInOrder = this.graph
-      .overallOrder()
-      .filter((n: any) => definitions.find((d: any) => d.id === n));
+    const nodesInOrder = this.graph.overallOrder();
 
     return nodesInOrder
       .map((n: any) => definitions.find((d: any) => d.id === n)?.source || '')
