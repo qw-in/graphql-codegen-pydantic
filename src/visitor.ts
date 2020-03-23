@@ -312,9 +312,6 @@ export class PydanticVisitor extends BaseVisitor<
 
     const nodesInOrder = this.graph.overallOrder();
 
-    console.log(nodesInOrder);
-    console.log(definitions);
-
     return nodesInOrder
       .map((n: any) => definitions.find((d: any) => d.id === n)?.source || '')
       .join('\n\n\n');
