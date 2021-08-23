@@ -22,7 +22,6 @@ import {
   InputObjectTypeDefinitionNode,
   InputValueDefinitionNode,
 } from 'graphql';
-import { snakeCase } from 'change-case';
 import { DepGraph } from 'dependency-graph';
 
 import { PydanticPluginRawConfig } from './config';
@@ -205,12 +204,9 @@ export class PydanticVisitor extends BaseVisitor<
   }
 
   protected visitFieldOrInputDefinition(node: any) {
-    const argName = snakeCase(node.name as any);
+    const argName = node.name as any;
 
     const { type, directives } = node as any;
-
-    // @todo handle de-duplicating if snakeCase will break
-    // eg aaaa and AAAA field
 
     // Handle deprecated
     const ds = directives.map((d: any) => d.name);
