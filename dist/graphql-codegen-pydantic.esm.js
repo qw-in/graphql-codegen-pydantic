@@ -164,14 +164,12 @@ class PydanticVisitor extends BaseVisitor {
       type,
       directives
     } = node; // Handle deprecated
-
-    const ds = directives.map(d => d.name);
-
-    if (ds.includes('deprecated')) {
-      return null;
-    } // Need to alias some field names
+    // const ds = directives.map((d: any) => d.name);
+    // if (ds.includes('deprecated')) {
+    //  return null;
+    // }
+    // Need to alias some field names
     // Otherwise pydantic throws
-
 
     if (RESERVED.includes(argName)) {
       this.addFieldImport = true;

@@ -41,15 +41,15 @@ export declare class PydanticVisitor extends BaseVisitor<PydanticPluginRawConfig
     protected visitFieldOrInputDefinition(node: any): {
         id: any;
         source: string;
-    } | null;
+    };
     FieldDefinition(node: FieldDefinitionNode): {
         id: any;
         source: string;
-    } | null;
+    };
     InputValueDefinition(node: InputValueDefinitionNode): {
         id: any;
         source: string;
-    } | null;
+    };
     EnumTypeDefinition(node: EnumTypeDefinitionNode): {
         id: any;
         source: string;
