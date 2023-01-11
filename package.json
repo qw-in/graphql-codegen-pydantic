@@ -23,7 +23,8 @@
     "@graphql-codegen/plugin-helpers": "^2.2.0",
     "@graphql-codegen/visitor-plugin-common": "^2.4.0",
     "change-case": "^4.1.2",
-    "dependency-graph": "^0.11.0"
+    "dependency-graph": "^0.11.0",
+    "ts-node": "^10.9.1"
   },
   "peerDependencies": {
     "@graphql-codegen/cli": "^2.2.1",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "^2.2.1",
     "@graphql-codegen/testing": "^1.17.7",
+    "@graphql-codegen/typescript": "^2.8.7",
     "@types/node": "^18.11.18",
     "@typescript-eslint/parser": "5.48.1",
     "babel-eslint": "^10.1.0",
