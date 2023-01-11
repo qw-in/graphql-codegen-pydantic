@@ -4,6 +4,31 @@ import { buildSchema } from 'graphql';
 import { plugin } from '../src/index';
 
 describe('Pydantic', () => {
+  it('directive deprecated', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type A {
+        id: B @deprecated
+      }
+      type B {
+        name: String @deprecated
+      }
+    `);
+
+    const result = await plugin(schema, [], {});
+
+    expect(result).toBeSimilarStringTo(`
+    from typing import Optional
+    from pydantic import BaseModel
+    
+    
+    class A(BaseModel):
+        id: Optional['B']
+
+    class B(BaseModel):
+        name: Optional[str]
+    `);
+  });
+  
   it('basic Object', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type A {
