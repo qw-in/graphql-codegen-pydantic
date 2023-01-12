@@ -1,4 +1,5 @@
 # custom ignores
+examples/
 *.env
 *.secrets
 **/.payload

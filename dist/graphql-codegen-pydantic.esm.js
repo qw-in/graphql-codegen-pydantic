@@ -32,87 +32,70 @@ class PydanticVisitor extends BaseVisitor {
       circular: false
     });
   }
-
   getImports() {
     const typing = [];
     const pydantic = ['BaseModel'];
-
     if (this.addAnyImport) {
       typing.push(`Any`);
     }
-
     if (this.addOptionalImport) {
       typing.push(`Optional`);
     }
-
     if (this.addListImport) {
       typing.push(`List`);
     }
-
     if (this.addUnionImport) {
       typing.push(`Union`);
     }
-
     if (this.addFieldImport) {
       pydantic.push(`Field`);
     }
-
     const enumInput = this.addEnumImport ? 'from enum import Enum' : '';
     const typingImport = typing.length ? `from typing import ${typing.join(', ')}` : '';
     const pydanticImport = pydantic.length ? `from pydantic import ${pydantic.join(', ')}` : '';
     return [enumInput, typingImport, pydanticImport].filter(i => i).join('\n');
   }
-
   canAddGraphNode(id) {
     if (Object.values(this.scalars).includes(id) || id === 'Any') {
       return false;
     }
-
     return true;
   }
-
   upsertGraphNode(id) {
     if (this.canAddGraphNode(id) && !this.graph.hasNode(id)) {
       this.graph.addNode(id);
     }
   }
-
   addGraphNodeDeps(id, ids) {
     if (!this.canAddGraphNode(id)) {
       return;
     }
-
     this.upsertGraphNode(id);
     ids.forEach(i => {
       if (!this.canAddGraphNode(i)) {
         return;
       }
-
       this.upsertGraphNode(i);
       this.graph.addDependency(id, i);
     });
   }
-
   clearOptional(str) {
     if (str.startsWith('Optional[')) {
       return str.replace(/Optional\[(.*?)\]$/, '$1');
     }
-
     return str;
   }
-
   Name(node) {
     return node.value;
   }
-
   NamedType(node) {
     const {
       name
-    } = node; // Scalars
-
+    } = node;
+    // Scalars
     if (Object.keys(this.scalars).includes(name)) {
-      const id = this.scalars[name]; // Special case for any
-
+      const id = this.scalars[name];
+      // Special case for any
       if (id === 'any') {
         this.addAnyImport = true;
         return {
@@ -120,22 +103,19 @@ class PydanticVisitor extends BaseVisitor {
           source: 'Any'
         };
       }
-
       this.addOptionalImport = true;
       return {
         id,
         source: `Optional[${id}]`
       };
-    } // Defined
-
-
+    }
+    // Defined
     this.addOptionalImport = true;
     return {
       id: name,
       source: `Optional['${name}']`
     };
   }
-
   ListType(node) {
     this.addListImport = true;
     this.addOptionalImport = true;
@@ -147,7 +127,6 @@ class PydanticVisitor extends BaseVisitor {
       source: `Optional[List[${type.source}]]`
     };
   }
-
   NonNullType(node) {
     const {
       type
@@ -157,20 +136,19 @@ class PydanticVisitor extends BaseVisitor {
       source: this.clearOptional(type.source)
     };
   }
-
   visitFieldOrInputDefinition(node) {
     const argName = node.name;
     const {
       type,
       directives
-    } = node; // Handle deprecated
+    } = node;
+    // Handle deprecated
     // const ds = directives.map((d: any) => d.name);
     // if (ds.includes('deprecated')) {
     //  return null;
     // }
     // Need to alias some field names
     // Otherwise pydantic throws
-
     if (RESERVED.includes(argName)) {
       this.addFieldImport = true;
       return {
@@ -178,21 +156,17 @@ class PydanticVisitor extends BaseVisitor {
         source: indent(`${argName}_: ${type.source} = Field(None, alias='${argName}')`, 2)
       };
     }
-
     return {
       id: type.id,
       source: indent(`${argName}: ${type.source}`, 2)
     };
   }
-
   FieldDefinition(node) {
     return this.visitFieldOrInputDefinition(node);
   }
-
   InputValueDefinition(node) {
     return this.visitFieldOrInputDefinition(node);
   }
-
   EnumTypeDefinition(node) {
     this.addEnumImport = true;
     const {
@@ -207,7 +181,6 @@ class PydanticVisitor extends BaseVisitor {
       source
     };
   }
-
   UnionTypeDefinition(node) {
     this.addUnionImport = true;
     const {
@@ -221,7 +194,6 @@ class PydanticVisitor extends BaseVisitor {
       source: `${name} = Union[${unionTypes.join(', ')}]`
     };
   }
-
   InterfaceTypeDefinition(node) {
     const {
       name,
@@ -236,7 +208,6 @@ class PydanticVisitor extends BaseVisitor {
       source
     };
   }
-
   ObjectTypeDefinition(node) {
     const {
       name,
@@ -248,19 +219,16 @@ class PydanticVisitor extends BaseVisitor {
     const impl = interfaces.length ? interfaces.join(', ') : 'BaseModel';
     const args = fields.map(f => f.source).join('\n');
     const source = `class ${name}(${impl}):\n${args}`;
-
     if (interfaces.length) {
       this.addGraphNodeDeps(name, interfaces);
     } else {
       this.upsertGraphNode(name);
     }
-
     return {
       id: name,
       source
     };
   }
-
   InputObjectTypeDefinition(node) {
     const {
       name,
@@ -275,7 +243,6 @@ class PydanticVisitor extends BaseVisitor {
       source
     };
   }
-
   Document(node) {
     const {
       definitions
@@ -283,13 +250,12 @@ class PydanticVisitor extends BaseVisitor {
     const nodesInOrder = this.graph.overallOrder();
     return nodesInOrder.map(n => {
       var _definitions$find;
-
       return ((_definitions$find = definitions.find(d => d.id === n)) == null ? void 0 : _definitions$find.source) || '';
     }).join('\n\n\n');
   }
-
 }
 
+// eslint-disable-next-line import/prefer-default-export
 const plugin = async (schema, documents, config, info) => {
   const visitor = new PydanticVisitor(config, schema);
   const printedSchema = printSchema(schema);
