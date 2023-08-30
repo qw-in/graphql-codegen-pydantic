@@ -94,7 +94,7 @@ export class PydanticVisitor extends BaseVisitor<
       pydantic.push(`Field`);
     }
 
-    const enumInput = this.addEnumImport ? 'from enum import Enum' : '';
+    const enumInput = this.addEnumImport ? 'from enum import StrEnum' : '';
 
     const typingImport = typing.length
       ? `from typing import ${typing.join(', ')}`
@@ -249,7 +249,7 @@ export class PydanticVisitor extends BaseVisitor<
     const val = values
       .map((v: any) => indent(`${v.name} = '${v.name}'`, 2))
       .join('\n');
-    const source = `class ${name}(str, Enum):\n${val}`;
+    const source = `class ${name}(StrEnum):\n${val}`;
 
     this.upsertGraphNode(name);
 

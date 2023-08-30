@@ -83,11 +83,11 @@ describe('Pydantic', () => {
     const result = await plugin(schema, [], {});
 
     expect(result).toBeSimilarStringTo(`
-    from enum import Enum
+    from enum import StrEnum
     from pydantic import BaseModel
 
 
-    class Type(str, Enum):
+    class Type(StrEnum):
         FIRST = 'FIRST'
         SECOND = 'SECOND'
         THIRD = 'THIRD'

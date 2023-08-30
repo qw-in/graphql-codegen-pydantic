@@ -54,7 +54,7 @@ class PydanticVisitor extends visitorPluginCommon.BaseVisitor {
     if (this.addFieldImport) {
       pydantic.push(`Field`);
     }
-    const enumInput = this.addEnumImport ? 'from enum import Enum' : '';
+    const enumInput = this.addEnumImport ? 'from enum import StrEnum' : '';
     const typingImport = typing.length ? `from typing import ${typing.join(', ')}` : '';
     const pydanticImport = pydantic.length ? `from pydantic import ${pydantic.join(', ')}` : '';
     return [enumInput, typingImport, pydanticImport].filter(i => i).join('\n');
@@ -178,7 +178,7 @@ class PydanticVisitor extends visitorPluginCommon.BaseVisitor {
       values
     } = node;
     const val = values.map(v => visitorPluginCommon.indent(`${v.name} = '${v.name}'`, 2)).join('\n');
-    const source = `class ${name}(str, Enum):\n${val}`;
+    const source = `class ${name}(StrEnum):\n${val}`;
     this.upsertGraphNode(name);
     return {
       id: name,
