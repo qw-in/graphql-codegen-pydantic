@@ -1,3 +1,13 @@
+> [!WARNING]
+> Unfortunatly, I never did find the time to flesh out this plugin & I've moved on from both GraphQL & Python for the time being.
+>
+> If you are looking for alternatives, consider [@jhnnsrs's turms](https://github.com/jhnnsrs/turms) (see [#10](https://github.com/qw-in/graphql-codegen-pydantic/issues/10)).
+>
+> Please feel free to contact me if you are interested in taking over this package. Thanks!
+>
+> --Quinn (@qw-in)
+
+
 # Pydantic type generation for graphql
 
 `graphql-codegen-pydantic` is a plugin for [`graphql-codegen`](https://graphql-code-generator.com/docs/getting-started/)
